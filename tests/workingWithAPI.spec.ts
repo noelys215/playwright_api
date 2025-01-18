@@ -36,14 +36,15 @@ test('has title', async ({ page }) => {
 });
 
 test('delete article', async ({ page, request }) => {
-	const response = await request.post('https://conduit.bondaracademy.com/login', {
+	const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
 		data: {
 			user: { email: 'lavalamps@gmail.com', password: 'test123' },
 		},
 	});
 
 	const responseBody = await response.json();
-	console.log(responseBody);
+	const accessToken = responseBody.user.token;
+	console.log(accessToken);
 });
 
 /*
