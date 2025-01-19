@@ -1,15 +1,19 @@
 import { test, expect, request } from '@playwright/test';
 import tags from '../test-data/tags.json';
 
-// test.beforeEach(async ({ page }) => {
-// 	await page.route('*/**/api/tags', async (route) => {
-// 		await route.fulfill({
-// 			body: JSON.stringify(tags),
-// 		});
-// 	});
+test.beforeEach(async ({ page }) => {
+	await page.route('*/**/api/tags', async (route) => {
+		await route.fulfill({
+			body: JSON.stringify(tags),
+		});
+	});
 
-// 	await page.goto('https://conduit.bondaracademy.com/');
-// });
+	await page.goto('https://conduit.bondaracademy.com/');
+	await page.getByText('Sign in').click();
+	await page.getByRole('textbox', { name: 'Email' }).fill('lavalamps@gmail.com');
+	await page.getByRole('textbox', { name: 'Password' }).fill('test123');
+	await page.getByRole('button').click();
+});
 
 test('has title', async ({ page }) => {
 	await page.route('*/**/api/articles*', async (route) => {
@@ -44,7 +48,34 @@ test('delete article', async ({ page, request }) => {
 
 	const responseBody = await response.json();
 	const accessToken = responseBody.user.token;
-	console.log(accessToken);
+
+	const articleResponse = await request.post(
+		'https://conduit-api.bondaracademy.com/api/articles',
+		{
+			data: {
+				article: {
+					tagList: [],
+					title: 'This is a test title',
+					description: 'This is a test description',
+					body: 'This is a test body',
+				},
+			},
+			headers: {
+				Authorization: `Token ${accessToken}`,
+			},
+		}
+	);
+
+	expect(articleResponse.status()).toEqual(201);
+
+	await page.getByText('Global Feed').click();
+	await page.getByText('This is a test title').click();
+	await page.getByRole('button', { name: 'Delete Article' }).first().click();
+	await page.getByText('Global Feed').click();
+
+	await expect(page.locator('app-article-list p').first()).not.toContainText(
+		'This is a test title'
+	);
 });
 
 /*
