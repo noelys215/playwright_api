@@ -86,6 +86,11 @@ test('create article', async ({ page, request }) => {
 		.fill('About the Playwright');
 	await page.getByRole('textbox', { name: 'Write your article (in markdown)' }).fill('Some text');
 	await page.getByRole('button', { name: 'Publish Article' }).click();
+	const articleResponse = await page.waitForResponse(
+		'https://conduit-api.bondaracademy.com/api/articles/'
+	);
+	const articleResponseBody = await articleResponse.json();
+	const slugId = articleResponseBody.article.slug;
 
 	await expect(page.locator('.article-page h1')).toContainText('Playwright is awesome');
 	await page.getByText('Home').click();
@@ -93,6 +98,26 @@ test('create article', async ({ page, request }) => {
 	await expect(page.locator('app-article-list h1').first()).toContainText(
 		'Playwright is awesome'
 	);
+
+	const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
+		data: {
+			user: { email: 'lavalamps@gmail.com', password: 'test123' },
+		},
+	});
+
+	const responseBody = await response.json();
+	const accessToken = responseBody.user.token;
+
+	const deleteArticleResponse = await request.delete(
+		`https://conduit-api.bondaracademy.com/api/articles/${slugId}`,
+		{
+			headers: {
+				Authorization: `Token ${accessToken}`,
+			},
+		}
+	);
+
+	expect(deleteArticleResponse.status()).toEqual(204);
 });
 
 /*
