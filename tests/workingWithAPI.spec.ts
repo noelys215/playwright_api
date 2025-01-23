@@ -36,15 +36,6 @@ test('has title', async ({ page }) => {
 });
 
 test('delete article', async ({ page, request }) => {
-	const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
-		data: {
-			user: { email: 'lavalamps@gmail.com', password: 'test123' },
-		},
-	});
-
-	const responseBody = await response.json();
-	const accessToken = responseBody.user.token;
-
 	const articleResponse = await request.post(
 		'https://conduit-api.bondaracademy.com/api/articles',
 		{
@@ -55,9 +46,6 @@ test('delete article', async ({ page, request }) => {
 					description: 'This is a test description',
 					body: 'This is a test body',
 				},
-			},
-			headers: {
-				Authorization: `Token ${accessToken}`,
 			},
 		}
 	);
@@ -95,29 +83,9 @@ test('create article', async ({ page, request }) => {
 		'Playwright is awesome'
 	);
 
-	const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
-		data: {
-			user: { email: 'lavalamps@gmail.com', password: 'test123' },
-		},
-	});
-
-	const responseBody = await response.json();
-	const accessToken = responseBody.user.token;
-
 	const deleteArticleResponse = await request.delete(
-		`https://conduit-api.bondaracademy.com/api/articles/${slugId}`,
-		{
-			headers: {
-				Authorization: `Token ${accessToken}`,
-			},
-		}
+		`https://conduit-api.bondaracademy.com/api/articles/${slugId}`
 	);
 
 	expect(deleteArticleResponse.status()).toEqual(204);
 });
-
-/*
-App: https://conduit.bondaracademy.com/
-		https://conduit-api.bondaracademy.com
-API: https://conduit-api.bondaracademy.com/api/
- */
